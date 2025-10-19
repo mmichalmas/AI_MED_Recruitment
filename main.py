@@ -1,7 +1,9 @@
+import numpy as np
 import pandas as pd
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
+from sklearn.svm import SVC
 
 # loading data
 data = pd.read_csv("task_data.csv")
@@ -25,3 +27,23 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_
 scaler = StandardScaler()
 X_scaled_train = scaler.fit_transform(X_train)
 X_scaled_test = scaler.transform(X_test)
+
+print(y_train.value_counts())
+
+#SVM
+pipe_svc = Pipeline([
+    ('scaler', StandardScaler()),
+    ("model", SVC(
+        kernel="rbf",
+        C=3,
+        gamma="scale",
+        class_weight="balanced", # In cardiomegaly 1 occurs much more frequently than 0
+    ))
+])
+
+cv_score = np.round(cross_val_score(pipe_svc, X_train, y_train), 2)
+
+print("Scores of training data cross-validation (each fold):")
+list(map(print, cv_score))
+print(f"\nCross-validation mean score: {cv_score.mean():.3f}")
+print(f"Standard deviation of CV score: {cv_score.std():.3f}")
