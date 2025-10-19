@@ -35,7 +35,6 @@ pipe_svc = Pipeline([
         class_weight="balanced", # In cardiomegaly 1 occurs much more frequently than 0
     ))
 ])
-pipe_svc.fit(X_train, y_train)
 
 cv_score = np.round(cross_val_score(pipe_svc, X_train, y_train), 2)
 
