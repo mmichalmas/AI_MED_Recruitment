@@ -23,11 +23,6 @@ y = data["Cardiomegaly"]
 # splitting dataset into training (80%) and testing (20%)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# normalizing numeric data
-scaler = StandardScaler()
-X_scaled_train = scaler.fit_transform(X_train)
-X_scaled_test = scaler.transform(X_test)
-
 print(y_train.value_counts())
 
 #SVM
@@ -40,6 +35,7 @@ pipe_svc = Pipeline([
         class_weight="balanced", # In cardiomegaly 1 occurs much more frequently than 0
     ))
 ])
+pipe_svc.fit(X_train, y_train)
 
 cv_score = np.round(cross_val_score(pipe_svc, X_train, y_train), 2)
 
