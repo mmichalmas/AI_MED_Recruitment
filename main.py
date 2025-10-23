@@ -1,7 +1,8 @@
 import numpy as np
 import pandas as pd
-from sklearn.model_selection import train_test_split, cross_val_score
-from sklearn.pipeline import Pipeline
+from sklearn.metrics import classification_report
+from sklearn.model_selection import train_test_split, cross_val_score, cross_val_predict
+from imblearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 
@@ -32,13 +33,16 @@ pipe_svc = Pipeline([
         kernel="rbf",
         C=3,
         gamma="scale",
-        class_weight="balanced", # In cardiomegaly 1 occurs much more frequently than 0
+        class_weight="balanced" # In cardiomegaly 1 occurs much more frequently than 0
     ))
 ])
-
 cv_score = np.round(cross_val_score(pipe_svc, X_train, y_train), 2)
 
 print("Scores of training data cross-validation (each fold):")
 list(map(print, cv_score))
 print(f"\nCross-validation mean score: {cv_score.mean():.3f}")
 print(f"Standard deviation of CV score: {cv_score.std():.3f}")
+
+# Classification report from svc prediction
+y_pred = cross_val_predict(pipe_svc, X_train, y_train)
+print(classification_report(y_train, y_pred, digits=3))
