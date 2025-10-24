@@ -1,8 +1,8 @@
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-from sklearn.metrics import classification_report, roc_curve, auc
-from sklearn.model_selection import train_test_split, cross_val_score, cross_val_predict
+from imblearn.over_sampling import ADASYN
+from sklearn.metrics import classification_report
+from sklearn.model_selection import cross_val_score, cross_val_predict, RepeatedStratifiedKFold
 from imblearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
@@ -22,23 +22,25 @@ X = data[[
     "Polygon_Area_Ratio","Heart_perimeter","Heart_area", "Lung_area"
 ]]
 y = data["Cardiomegaly"]
-# splitting dataset into training (80%) and testing (20%)
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
+# not splitting dataset because of its size
+X_train = X
+y_train = y
 print(y_train.value_counts())
 
 #SVM
 pipe_svc = Pipeline([
-    ('scaler', StandardScaler()),
+    ('generator',ADASYN(n_neighbors=4)),
+    ('scaler',StandardScaler()),
     ("model", SVC(
-        kernel="rbf",
-        C=3,
+        kernel="poly",
+        C=10,
         gamma="scale",
         class_weight="balanced", # In cardiomegaly 1 occurs much more frequently than 0
         probability=True,
     ))
 ])
-cv_score = np.round(cross_val_score(pipe_svc, X_train, y_train), 2)
+cv = RepeatedStratifiedKFold(n_splits=5, n_repeats=10, random_state=42)
+cv_score = np.round(cross_val_score(pipe_svc, X_train, y_train,cv=cv,scoring="recall_macro"), 2)
 
 print("Scores of training data cross-validation (each fold):")
 list(map(print, cv_score))
@@ -49,23 +51,18 @@ print(f"Standard deviation of CV score: {cv_score.std():.3f}")
 y_pred = cross_val_predict(pipe_svc, X_train, y_train)
 print(classification_report(y_train, y_pred, digits=3))
 
-y_scores = cross_val_predict(pipe_svc, X_train, y_train,method="predict_proba")
-y_pred_pos = y_scores[:,1]
-
-#ROC Curve
-fpr, tpr, _ = roc_curve(y_train, y_pred_pos)
-roc_auc = auc(fpr, tpr)
-
-# Plotting
-plt.figure(figsize=(12, 5))
-
-# ROC
-plt.subplot(1, 2, 1)
-plt.plot(fpr, tpr, label=f"AUC = {roc_auc:.2f}")
-plt.plot([0, 1], [0, 1], 'k--')
-plt.xlabel("False Positive Rate")
-plt.ylabel("True Positive Rate")
-plt.title("ROC Curve")
-plt.legend()
+# param_grid = {
+#     'generator__n_neighbors': [2, 3,4],
+#     'model__C': [0.5, 1, 3, 10],
+#     'model__gamma': ['scale', 'auto'],
+#     'model__kernel': ['rbf', 'poly']
+#
+# }
+#
+# grid = GridSearchCV(pipe_svc, param_grid, cv=5, scoring='recall_macro', n_jobs=-1)
+# grid.fit(X_train, y_train)
+#
+# print("Best parameters:", grid.best_params_)
+# print("Best recall_macro:", grid.best_score_)
 
 
