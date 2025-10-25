@@ -19,10 +19,10 @@ Two classification models were built for medical data (`0 = healthy`, `1 = disea
 ### Generator:
 - **ADASYN**  
   Used to synthetically generate minority class samples in complex regions of the feature space. This helps improve class balance and recall for diseased cases without oversimplifying decision boundaries.
-### Scaler:
-- **SimpleScaler**
-  Applied before oversampling to ensure that all features contribute equally to distance-based calculations. This is especially important for SVM and ADASYN, which rely on feature geometry. Scaling improves convergence and prevents bias from dominant features.
 
+### Scaler:
+- **SimpleScaler**  
+    Applied before oversampling to ensure that all features contribute equally to distance-based calculations. This is especially important for SVM and ADASYN, which rely on feature geometry. Scaling improves convergence and prevents bias from dominant features.
   
 ### Hyperparameter Tuning:
 - **GridSearchCV**  
