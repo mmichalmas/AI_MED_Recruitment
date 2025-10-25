@@ -29,15 +29,15 @@ print(y_train.value_counts())
 
 #SVM
 pipe_svc = Pipeline([
-    ('generator',ADASYN(n_neighbors=4,random_state=42)),
+    ('generator',ADASYN(n_neighbors=3,random_state=51)),
     ('scaler',StandardScaler()),
     ("model", SVC(
-        kernel="poly",
-        C=10,
-        gamma="auto",
+        kernel="rbf",
+        C=3,
+        gamma="scale",
         class_weight="balanced",
         probability=True,
-        random_state=42
+        random_state=51
     ))
 ])
 cv = RepeatedStratifiedKFold(n_splits=5, n_repeats=10)
@@ -52,18 +52,18 @@ print(f"Standard deviation of CV score: {cv_score.std():.3f}")
 y_pred = cross_val_predict(pipe_svc, X_train, y_train)
 print(classification_report(y_train, y_pred, digits=3))
 
-param_grid = {
-    'generator__n_neighbors': [2, 3,4],
-    'model__C': [0.5, 1, 3, 10],
-    'model__gamma': ['scale', 'auto'],
-    'model__kernel': ['rbf', 'poly']
-
-}
-
-grid = GridSearchCV(pipe_svc, param_grid, cv=5, scoring="recall_macro", n_jobs=-1)
-grid.fit(X_train, y_train)
-
-print("Best parameters:", grid.best_params_)
-print("Best recall_macro:", grid.best_score_)
+# param_grid = {
+#     'generator__n_neighbors': [2, 3,4],
+#     'model__C': [0.5, 1, 3, 10],
+#     'model__gamma': ['scale', 'auto'],
+#     'model__kernel': ['rbf', 'poly']
+#
+# }
+#
+# grid = GridSearchCV(pipe_svc, param_grid, cv=5, scoring="recall_macro", n_jobs=-1)
+# grid.fit(X_train, y_train)
+#
+# print("Best parameters:", grid.best_params_)
+# print("Best recall_macro:", grid.best_score_)
 
 
